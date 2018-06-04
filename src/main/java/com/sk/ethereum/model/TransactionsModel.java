@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.data.annotation.Id;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.Transaction;
 
@@ -15,6 +16,8 @@ import org.web3j.protocol.core.methods.response.Transaction;
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "ethereum", type = "transactions")
 public class TransactionsModel {
 
+    @Id
+    private Long id;
     private String hash;
     private Long nonce;
     private String nonceRaw;
@@ -40,6 +43,7 @@ public class TransactionsModel {
     private int v;
 
     public TransactionsModel(Transaction result) {
+        this.id = result.getBlockNumber().longValue();
         this.hash = result.getHash();
         this.nonce = result.getNonce().longValue();
         this.nonceRaw = result.getNonceRaw();
@@ -67,6 +71,7 @@ public class TransactionsModel {
 
     public TransactionsModel(EthBlock.TransactionResult result) {
         Transaction transaction = (Transaction) result.get();
+        this.id = transaction.getBlockNumber().longValue();
         this.hash = transaction.getHash();
         this.nonce = transaction.getNonce().longValue();
         this.nonceRaw = transaction.getNonceRaw();
