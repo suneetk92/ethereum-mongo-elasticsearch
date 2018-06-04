@@ -17,7 +17,7 @@ import org.web3j.protocol.core.methods.response.Transaction;
 public class TransactionsModel {
 
     @Id
-    private Long id;
+    private String id;
     private String hash;
     private Long nonce;
     private String nonceRaw;
@@ -43,7 +43,7 @@ public class TransactionsModel {
     private int v;
 
     public TransactionsModel(Transaction result) {
-        this.id = result.getBlockNumber().longValue();
+        this.id = result.getBlockNumberRaw();
         this.hash = result.getHash();
         this.nonce = result.getNonce().longValue();
         this.nonceRaw = result.getNonceRaw();
@@ -71,7 +71,7 @@ public class TransactionsModel {
 
     public TransactionsModel(EthBlock.TransactionResult result) {
         Transaction transaction = (Transaction) result.get();
-        this.id = transaction.getBlockNumber().longValue();
+        this.id = transaction.getBlockNumberRaw();
         this.hash = transaction.getHash();
         this.nonce = transaction.getNonce().longValue();
         this.nonceRaw = transaction.getNonceRaw();

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "ethereum", type = "blocks")
 public class BlocksModel {
     @Id
-    private Long id;
+    private String id;
     private Long number;
     private String numberRaw;
     private String hash;
@@ -55,7 +55,7 @@ public class BlocksModel {
     private List<String> sealFields;
 
     public BlocksModel(EthBlock.Block result) {
-        this.id = result.getNumber().longValue();
+        this.id = result.getNumberRaw();
         this.number = result.getNumber().longValue();
         this.numberRaw = result.getNumberRaw();
         this.hash = result.getHash();
