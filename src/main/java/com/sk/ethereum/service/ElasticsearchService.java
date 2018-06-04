@@ -32,6 +32,9 @@ public class ElasticsearchService implements EthereumService {
     @Value("${web3j.host}")
     private String httpHost;
 
+    @Value("${lastBlock.number}")
+    private Long number;
+
     @Value("${is.catchUpToLatestAndSubscribeToNewBlocksObservable}")
     private Boolean isCatchUpToLatestAndSubscribeToNewBlocksObservable;
 
@@ -58,7 +61,7 @@ public class ElasticsearchService implements EthereumService {
 
         if (isCatchUpToLatestAndSubscribeToNewBlocksObservable) {
             Optional<LastPositionsModel> lastBlock = lastPositionsRepository.findById("lastBlock");
-            lastBlockResult = lastBlock.orElseGet(() -> new LastPositionsModel("lastBlock", "0x0eef117513ba151b9a9e823edc7ee11aeb69b666296e79769dd656de17c4352e", 5720000L));
+            lastBlockResult = lastBlock.orElseGet(() -> new LastPositionsModel("lastBlock", number));
             BigInteger blockNumber = BigInteger.valueOf(lastBlockResult.getNumber());
 
             LOGGER.info("Last Block synced in elasticsearch till: " + blockNumber);
@@ -73,7 +76,7 @@ public class ElasticsearchService implements EthereumService {
                     )
                     .subscribe(block -> {
                         BlocksModel result = new BlocksModel(block.getBlock());
-                        lastBlockResult = new LastPositionsModel("lastBlock", result.getHash(), result.getNumber());
+                        lastBlockResult = new LastPositionsModel("lastBlock", result.getNumber());
 
                         blocksRepository.save(result);
                         lastPositionsRepository.save(lastBlockResult);
@@ -87,7 +90,7 @@ public class ElasticsearchService implements EthereumService {
 
         if (isCatchUpToLatestAndSubscribeToNewTransactionsObservable) {
             Optional<LastPositionsModel> lastTransaction = lastPositionsRepository.findById("lastTransaction");
-            lastTransactionResult = lastTransaction.orElseGet(() -> new LastPositionsModel("lastTransaction", "0x0eef117513ba151b9a9e823edc7ee11aeb69b666296e79769dd656de17c4352e", 5720000L));
+            lastTransactionResult = lastTransaction.orElseGet(() -> new LastPositionsModel("lastTransaction", number));
             BigInteger transactionNumber = BigInteger.valueOf(lastTransactionResult.getNumber());
 
             LOGGER.info("Last Transaction synced in elasticsearch till: " + transactionNumber);
@@ -101,7 +104,7 @@ public class ElasticsearchService implements EthereumService {
                     )
                     .subscribe(transaction -> {
                         TransactionsModel result = new TransactionsModel(transaction);
-                        lastTransactionResult = new LastPositionsModel("lastTransaction", result.getHash(), result.getBlockNumber());
+                        lastTransactionResult = new LastPositionsModel("lastTransaction", result.getBlockNumber());
 
                         transactionsRepository.save(result);
                         lastPositionsRepository.save(lastTransactionResult);

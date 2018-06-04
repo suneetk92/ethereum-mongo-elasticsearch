@@ -15,6 +15,5 @@ import org.springframework.data.annotation.Id;
 public class LastPositionsModel {
     @Id
     private String type;
-    private String hash;
     private Long number;
 }
