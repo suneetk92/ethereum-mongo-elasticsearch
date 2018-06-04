@@ -72,7 +72,7 @@ public class ElasticsearchService implements EthereumService {
                             })
                     )
                     .subscribe(block -> {
-                        BlocksModel result = new BlocksModel(block.getResult());
+                        BlocksModel result = new BlocksModel(block.getBlock());
                         lastBlockResult = new LastPositionsModel("lastBlock", result.getHash(), result.getNumber());
 
                         blocksRepository.save(result);

@@ -5,10 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
-import org.springframework.data.mongodb.repository.Meta;
 import org.web3j.protocol.core.methods.response.EthBlock;
 
 import java.util.Date;
@@ -23,7 +21,7 @@ import java.util.stream.Collectors;
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "ethereum", type = "blocks")
 public class BlocksModel {
     @Id
-    private String id;
+    private Long id;
     private Long number;
     private String numberRaw;
     private String hash;
@@ -57,7 +55,7 @@ public class BlocksModel {
     private List<String> sealFields;
 
     public BlocksModel(EthBlock.Block result) {
-        this.id = result.getHash();
+        this.id = result.getNumber().longValue();
         this.number = result.getNumber().longValue();
         this.numberRaw = result.getNumberRaw();
         this.hash = result.getHash();
