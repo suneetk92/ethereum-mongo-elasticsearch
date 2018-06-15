@@ -38,6 +38,9 @@ public class ElasticsearchService implements EthereumService {
     @Value("${is.catchUpToLatestAndSubscribeToNewBlocksObservable}")
     private Boolean isCatchUpToLatestAndSubscribeToNewBlocksObservable;
 
+    @Value("${is.blocksObservable}")
+    private Boolean isBlocksObservable;
+
     @Value("${is.catchUpToLatestAndSubscribeToNewTransactionsObservable}")
     private Boolean isCatchUpToLatestAndSubscribeToNewTransactionsObservable;
 
@@ -58,6 +61,29 @@ public class ElasticsearchService implements EthereumService {
     @Override
     public void storeInDB() {
         web3 = Web3j.build(new HttpService(httpHost));
+
+        if (isBlocksObservable) {
+            blockSubscription = web3.blockObservable(true)
+                    .retryWhen(errors -> errors.flatMap(error -> {
+                                LOGGER.info("Error occurred: " + error);
+
+                                lastPositionsRepository.save(lastBlockResult);
+                                return Observable.just(new Object()).delay(1L, TimeUnit.MINUTES);
+                            })
+                    )
+                    .subscribe(block -> {
+                        BlocksModel result = new BlocksModel(block.getBlock());
+                        lastBlockResult = new LastPositionsModel("lastBlock", result.getNumber());
+
+                        blocksRepository.save(result);
+                        lastPositionsRepository.save(lastBlockResult);
+
+                        LOGGER.info("Block written in elasticsearch database: " + result.getNumber());
+                    }, error -> {
+                        lastPositionsRepository.save(lastBlockResult);
+                        LOGGER.info("Exception occurred: " + error.getMessage());
+                    });
+        }
 
         if (isCatchUpToLatestAndSubscribeToNewBlocksObservable) {
             Optional<LastPositionsModel> lastBlock = lastPositionsRepository.findById("lastBlock");
@@ -84,7 +110,7 @@ public class ElasticsearchService implements EthereumService {
                         LOGGER.info("Block written in elasticsearch database: " + result.getNumber());
                     }, error -> {
                         lastPositionsRepository.save(lastBlockResult);
-                        LOGGER.info(error.getMessage());
+                        LOGGER.info("Exception occurred: " + error.getMessage());
                     });
         }
 
@@ -112,7 +138,7 @@ public class ElasticsearchService implements EthereumService {
                         LOGGER.info("Transaction written in elasticsearch database: " + result.getBlockNumber());
                     }, error -> {
                         lastPositionsRepository.save(lastTransactionResult);
-                        LOGGER.info(error.getMessage());
+                        LOGGER.info("Exception occurred: " + error.getMessage());
                     });
         }
     }
